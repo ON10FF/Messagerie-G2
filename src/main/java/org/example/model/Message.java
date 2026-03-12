@@ -11,6 +11,8 @@ public class Message implements Serializable {
 
     public enum StatutMessage {ENVOYE, RECU, LU}
 
+    private static final long serialVersionUID = 1L;
+
     public Message(){}
 
     public Message(User sender, User receiver, String message)

@@ -12,6 +12,8 @@ public class User implements Serializable {
         public enum Role {ORGANISATEUR, MEMBRE, BENEVOLE}
         public enum Status {ONLINE, OFFLINE}
 
+        private static final long serialVersionUID = 1L;
+
         @Id
         @GeneratedValue(strategy = GenerationType.IDENTITY)
         private Long id;
