@@ -113,12 +113,12 @@ public class ChatController {
         String expediteur = message.getSender().getUserName();
 
         if (expediteur.equals(selectedMember)) {
-            // ✅ La conversation est ouverte → affiche directement
+            //  La conversation est ouverte → affiche directement
             ajouterBulle(expediteur, message.getMessage(),
                     message.getDateHeureEnvoi().toString(), false);
             defilerVersLeBas();
         } else {
-            // ✅ Conversation pas ouverte → affiche 🔴 dans la liste
+            //  Conversation pas ouverte → affiche 🔴 dans la liste
             boolean dejaPresent = listeMembres.getItems().stream()
                     .anyMatch(u -> u.replace(" 🔴", "").trim().equals(expediteur));
 
@@ -144,13 +144,15 @@ public class ChatController {
         dialog.setTitle("Liste complète des membres");
         dialog.setHeaderText("👥 Tous les membres inscrits (" + membres.size() + ")");
         ListView<String> liste = new ListView<>();
-        for (User u : membres) liste.getItems().add(u.getUserName());
+        for (User u : membres) {
+            String statut = u.getStatus() == User.Status.ONLINE ? " 🟢 En ligne" : " 🔴 Hors ligne";
+            liste.getItems().add(u.getUserName() + statut);
+        }
         liste.setPrefSize(420, 300);
         dialog.getDialogPane().setContent(liste);
         dialog.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
         dialog.showAndWait();
     }
-
     @FXML
     public void envoyerMessage() {
         if (selectedMember == null) {

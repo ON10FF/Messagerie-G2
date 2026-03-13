@@ -28,7 +28,7 @@
                        -fx-padding: 12 30; -fx-cursor: hand;"/>
     </HBox>
 
-    <!-- Affichage erreur réseau RG10 -->
+    <!--  RG10 -->
     <Label fx:id="labelErreurReseau" text=""
            style="-fx-text-fill: #e94560; -fx-font-size: 13px;"/>
 

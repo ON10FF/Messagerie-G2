@@ -24,7 +24,7 @@
         <Label text="● Membres en ligne"
                style="-fx-text-fill: #4caf50; -fx-font-size: 12px; -fx-padding: 12 16 4 16;"/>
 
-        <!-- Bouton visible seulement pour ORGANISATEUR (RG13) -->
+
         <Button fx:id="boutonTousMembres" text="👥 Voir tous les membres"
                 onAction="#voirTousMembres"
                 maxWidth="Infinity" visible="false" managed="false"

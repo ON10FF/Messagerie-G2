@@ -13,6 +13,8 @@ import org.example.util.PasswordUtil;
 
 public class RegisterController {
 
+    private static final String CODE_SECRET_ORGANISATEUR = "passer";
+
     @FXML private TextField        champUsername;
     @FXML private PasswordField    champPassword;
     @FXML private ComboBox<String> comboRole;
@@ -47,9 +49,10 @@ public class RegisterController {
 
     @FXML
     public void sInscrire() {
-        String username = champUsername.getText().trim();
-        String password = champPassword.getText();
-        String role     = comboRole.getValue();
+        String username   = champUsername.getText().trim();
+        String password   = champPassword.getText();
+        String role       = comboRole.getValue();
+        String codeSecret = champCodeSecret.getText();
         labelErreur.setText("");
 
         if (username.isEmpty() || password.isEmpty()) {
@@ -64,7 +67,15 @@ public class RegisterController {
             return;
         }
 
-        // SHA-256 côté client — jamais le mot de passe en clair sur le réseau
+        // Vérification code secret ORGANISATEUR
+        if ("ORGANISATEUR".equals(role)) {
+            if (!CODE_SECRET_ORGANISATEUR.equals(codeSecret)) {
+                labelErreur.setStyle("-fx-text-fill: #e94560;");
+                labelErreur.setText("❌ Code secret incorrect pour ORGANISATEUR.");
+                return;
+            }
+        }
+
         String sha256 = PasswordUtil.getSHA256(password.toCharArray());
         User user = new User(username, sha256, User.Role.valueOf(role));
         ServerConnection.getInstance().send(new Packet(Packet.Type.REGISTER, user));
