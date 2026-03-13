@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<HBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="org.example.ui.ChatController"
+      prefWidth="900" prefHeight="600"
+      style="-fx-background-color: #1a1a2e;">
+
+    <!-- Barre latérale -->
+    <VBox prefWidth="240" style="-fx-background-color: #16213e;">
+
+        <HBox alignment="CENTER_LEFT" spacing="10"
+              style="-fx-background-color: #0f3460; -fx-padding: 16;">
+            <Label text="💬" style="-fx-font-size: 18px;"/>
+            <VBox>
+                <Label fx:id="labelUsername" text="Utilisateur"
+                       style="-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px;"/>
+                <Label fx:id="labelRole" text="MEMBRE"
+                       style="-fx-text-fill: #e94560; -fx-font-size: 11px;"/>
+            </VBox>
+        </HBox>
+
+        <Label text="● Membres en ligne"
+               style="-fx-text-fill: #4caf50; -fx-font-size: 12px; -fx-padding: 12 16 4 16;"/>
+
+        <!-- Bouton visible seulement pour ORGANISATEUR (RG13) -->
+        <Button fx:id="boutonTousMembres" text="👥 Voir tous les membres"
+                onAction="#voirTousMembres"
+                maxWidth="Infinity" visible="false" managed="false"
+                style="-fx-background-color: #0f3460; -fx-text-fill: #e94560;
+                       -fx-font-size: 12px; -fx-padding: 8; -fx-cursor: hand;
+                       -fx-background-radius: 0;"/>
+
+        <ListView fx:id="listeMembres"
+                  style="-fx-background-color: transparent; -fx-border-color: transparent;"
+                  VBox.vgrow="ALWAYS"/>
+
+        <Button text="⏻  Déconnexion" onAction="#seDeconnecter" maxWidth="Infinity"
+                style="-fx-background-color: #e94560; -fx-text-fill: white;
+                       -fx-font-size: 13px; -fx-padding: 12;
+                       -fx-cursor: hand; -fx-background-radius: 0;"/>
+    </VBox>
+
+    <!-- Zone de chat -->
+    <VBox HBox.hgrow="ALWAYS">
+
+        <HBox alignment="CENTER_LEFT" spacing="12"
+              style="-fx-background-color: #0f3460; -fx-padding: 16;">
+            <Label text="👤" style="-fx-font-size: 20px;"/>
+            <VBox>
+                <Label fx:id="labelChatAvec" text="Sélectionnez un contact"
+                       style="-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 15px;"/>
+                <Label fx:id="labelStatut" text=""
+                       style="-fx-text-fill: #4caf50; -fx-font-size: 11px;"/>
+            </VBox>
+        </HBox>
+
+        <ScrollPane fx:id="scrollPane" VBox.vgrow="ALWAYS" fitToWidth="true"
+                    style="-fx-background-color: #1a1a2e; -fx-background: #1a1a2e;
+                           -fx-border-color: transparent;">
+            <VBox fx:id="zoneMessages" spacing="8"
+                  style="-fx-padding: 16; -fx-background-color: #1a1a2e;"/>
+        </ScrollPane>
+
+        <HBox spacing="8" style="-fx-background-color: #16213e; -fx-padding: 12;">
+            <TextField fx:id="champMessage" promptText="Écrire un message..."
+                       HBox.hgrow="ALWAYS" onAction="#envoyerMessage"
+                       style="-fx-background-color: #0f3460; -fx-text-fill: white;
+                              -fx-prompt-text-fill: #888; -fx-background-radius: 20;
+                              -fx-padding: 10 16; -fx-font-size: 14px;"/>
+            <Button text="➤" onAction="#envoyerMessage"
+                    style="-fx-background-color: #e94560; -fx-text-fill: white;
+                           -fx-font-size: 16px; -fx-background-radius: 50;
+                           -fx-min-width: 44; -fx-min-height: 44; -fx-cursor: hand;"/>
+        </HBox>
+    </VBox>
+</HBox>

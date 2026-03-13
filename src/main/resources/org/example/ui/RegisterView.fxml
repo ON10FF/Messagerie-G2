@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="org.example.ui.RegisterController"
+      alignment="CENTER" spacing="0"
+      style="-fx-background-color: #1a1a2e;">
+
+    <VBox alignment="CENTER" spacing="14" maxWidth="360"
+          style="-fx-background-color: #16213e; -fx-background-radius: 16; -fx-padding: 40;">
+
+        <Label text="💬 Créer un compte"
+               style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #e94560;"/>
+
+        <TextField fx:id="champUsername" promptText="Nom d'utilisateur"
+                   style="-fx-background-color: #0f3460; -fx-text-fill: white;
+                          -fx-prompt-text-fill: #888; -fx-background-radius: 8;
+                          -fx-padding: 12; -fx-font-size: 14px;" maxWidth="280"/>
+
+        <PasswordField fx:id="champPassword" promptText="Mot de passe"
+                       style="-fx-background-color: #0f3460; -fx-text-fill: white;
+                              -fx-prompt-text-fill: #888; -fx-background-radius: 8;
+                              -fx-padding: 12; -fx-font-size: 14px;" maxWidth="280"/>
+
+        <ComboBox fx:id="comboRole" promptText="Choisir un rôle" maxWidth="280"
+                  style="-fx-background-color: #0f3460; -fx-background-radius: 8;"/>
+
+        <!-- Champ code secret pour ORGANISATEUR -->
+        <PasswordField fx:id="champCodeSecret"
+                       promptText="Code secret (ORGANISATEUR uniquement)"
+                       visible="false" managed="false" maxWidth="280"
+                       style="-fx-background-color: #0f3460; -fx-text-fill: white;
+                              -fx-prompt-text-fill: #888; -fx-background-radius: 8;
+                              -fx-padding: 12; -fx-font-size: 13px;"/>
+
+        <Label fx:id="labelErreur" text="" wrapText="true" maxWidth="280"
+               style="-fx-text-fill: #e94560; -fx-font-size: 12px;"/>
+
+        <Button text="S'inscrire" onAction="#sInscrire" maxWidth="280"
+                style="-fx-background-color: #e94560; -fx-text-fill: white;
+                       -fx-font-size: 14px; -fx-font-weight: bold;
+                       -fx-background-radius: 8; -fx-padding: 12; -fx-cursor: hand;"/>
+
+        <Button text="Déjà un compte ? Se connecter" onAction="#allerLogin"
+                maxWidth="280"
+                style="-fx-background-color: transparent; -fx-text-fill: #e94560;
+                       -fx-font-size: 13px; -fx-border-color: #e94560;
+                       -fx-border-radius: 8; -fx-background-radius: 8;
+                       -fx-padding: 10; -fx-cursor: hand;"/>
+    </VBox>
+</VBox>

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="org.example.ui.LoginController"
+      alignment="CENTER" spacing="0"
+      style="-fx-background-color: #1a1a2e;">
+
+    <VBox alignment="CENTER" spacing="18" maxWidth="360"
+          style="-fx-background-color: #16213e; -fx-background-radius: 16; -fx-padding: 40;">
+
+        <Label text="💬 Messagerie Association"
+               style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #e94560;"/>
+
+        <Label text="Connectez-vous à votre compte"
+               style="-fx-font-size: 13px; -fx-text-fill: #aaaaaa;"/>
+
+        <TextField fx:id="champUsername" promptText="Nom d'utilisateur"
+                   style="-fx-background-color: #0f3460; -fx-text-fill: white;
+                          -fx-prompt-text-fill: #888; -fx-background-radius: 8;
+                          -fx-padding: 12; -fx-font-size: 14px;" maxWidth="280"/>
+
+        <PasswordField fx:id="champMotDePasse" promptText="Mot de passe"
+                       style="-fx-background-color: #0f3460; -fx-text-fill: white;
+                              -fx-prompt-text-fill: #888; -fx-background-radius: 8;
+                              -fx-padding: 12; -fx-font-size: 14px;" maxWidth="280"/>
+
+        <Label fx:id="labelErreur" text="" wrapText="true" maxWidth="280"
+               style="-fx-text-fill: #e94560; -fx-font-size: 12px;"/>
+
+        <Button fx:id="boutonConnecter" text="Se connecter" onAction="#seConnecter"
+                maxWidth="280"
+                style="-fx-background-color: #e94560; -fx-text-fill: white;
+                       -fx-font-size: 14px; -fx-font-weight: bold;
+                       -fx-background-radius: 8; -fx-padding: 12; -fx-cursor: hand;"/>
+
+        <Separator maxWidth="280"/>
+
+        <Button text="Pas de compte ? S'inscrire" onAction="#allerInscription"
+                maxWidth="280"
+                style="-fx-background-color: transparent; -fx-text-fill: #e94560;
+                       -fx-font-size: 13px; -fx-border-color: #e94560;
+                       -fx-border-radius: 8; -fx-background-radius: 8;
+                       -fx-padding: 10; -fx-cursor: hand;"/>
+    </VBox>
+</VBox>
