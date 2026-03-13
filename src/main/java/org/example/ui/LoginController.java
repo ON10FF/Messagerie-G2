@@ -6,8 +6,11 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
+import org.example.client.PacketCallback;
 import org.example.client.ServerConnection;
-import org.example.model.Packet;
+import org.example.model.User;
+import org.example.util.Packet;
+import org.example.util.PasswordUtil;
 
 public class LoginController {
 
@@ -26,16 +29,12 @@ public class LoginController {
                 return;
             }
         }
-        conn.setOnMessage(this::traiterReponse);
-    }
-
-    private void traiterReponse(Packet packet) {
-        Platform.runLater(() -> {
+        conn.setOnMessage(packet -> Platform.runLater(() -> {
             switch (packet.getType()) {
-                case "LOGIN_OK"   -> allerChat(packet.getUsername(), packet.getRole());
-                case "LOGIN_FAIL" -> labelErreur.setText("❌ " + packet.getMessage());
+                case SUCCESS -> allerChat(packet);
+                case ERROR   -> labelErreur.setText("❌ " + packet.getData());
             }
-        });
+        }));
     }
 
     @FXML
@@ -49,10 +48,8 @@ public class LoginController {
             return;
         }
 
-        Packet packet = new Packet("LOGIN");
-        packet.setUsername(username);
-        packet.setMessage(password);
-        ServerConnection.getInstance().send(packet);
+        User user = new User(username, PasswordUtil.getHash(password.toCharArray()), User.Role.MEMBRE);
+        ServerConnection.getInstance().send(new Packet(Packet.Type.LOGIN, user));
     }
 
     @FXML
@@ -60,16 +57,17 @@ public class LoginController {
         changerScene("/org/example/ui/RegisterView.fxml", 500, 560);
     }
 
-    private void allerChat(String username, String role) {
+    private void allerChat(Packet packet) {
         try {
             FXMLLoader loader = new FXMLLoader(
                     getClass().getResource("/org/example/ui/ChatView.fxml"));
             Scene scene = new Scene(loader.load(), 900, 600);
             ChatController controller = loader.getController();
-            controller.init(username, role);
+            User user = (User) packet.getData();
+            controller.init(user.getUserName(), user.getRole().toString());
             Stage stage = (Stage) champUsername.getScene().getWindow();
             stage.setScene(scene);
-            stage.setTitle("💬 Messagerie — " + username);
+            stage.setTitle("💬 Messagerie — " + user.getUserName());
         } catch (Exception e) {
             e.printStackTrace();
         }
