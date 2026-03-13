@@ -12,7 +12,9 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.*;
 import javafx.stage.Stage;
 import org.example.client.ServerConnection;
-import org.example.model.Packet;
+import org.example.model.Message;
+import org.example.model.User;
+import org.example.util.Packet;
 
 import java.util.List;
 
@@ -28,55 +30,47 @@ public class ChatController {
     @FXML private ScrollPane       scrollPane;
     @FXML private TextField        champMessage;
 
-    private String currentUser;
-    private String currentRole;
+    private User currentUser;
     private String selectedMember = null;
 
     public void init(String username, String role) {
-        this.currentUser = username;
-        this.currentRole = role;
+        currentUser = new User(username, null, User.Role.valueOf(role));
         labelUsername.setText(username);
         labelRole.setText(role);
 
-        // RG13 : bouton visible uniquement pour ORGANISATEUR
         if ("ORGANISATEUR".equals(role)) {
             boutonTousMembres.setVisible(true);
             boutonTousMembres.setManaged(true);
         }
 
         ServerConnection conn = ServerConnection.getInstance();
-        conn.setOnMessage(this::traiterReponse);
-        conn.setOnDisconnect(() -> Platform.runLater(this::gererDeconnexion)); // RG10
+        conn.setOnMessage(packet -> Platform.runLater(() -> traiterReponse(packet)));
+        conn.setOnDisconnect(() -> Platform.runLater(this::gererDeconnexion));
 
-        // Clic sur un membre
         listeMembres.setOnMouseClicked(e -> {
             String selection = listeMembres.getSelectionModel().getSelectedItem();
-            if (selection != null && !selection.equals(currentUser)) {
+            if (selection != null && !selection.equals(username)) {
                 selectionnerMembre(selection.replace(" 🔴", ""));
             }
         });
 
-        // Demander la liste des membres en ligne
-        conn.send(new Packet("GET_ONLINE_USERS"));
+        conn.send(new Packet(Packet.Type.GET_USERS, null));
     }
 
     @SuppressWarnings("unchecked")
     private void traiterReponse(Packet packet) {
-        Platform.runLater(() -> {
-            switch (packet.getType()) {
-                case "ONLINE_USERS"  -> majListeMembres((List<String>) packet.getData());
-                case "RECEIVE_MSG"   -> afficherMessageRecu(packet);
-                case "HISTORY"       -> chargerHistorique(packet);
-                case "ALL_MEMBERS"   -> afficherTousMembres((List<String>) packet.getData());
-            }
-        });
+        switch (packet.getType()) {
+            case USER_LIST      -> majListeMembres((List<User>) packet.getData());
+            case MESSAGE        -> afficherMessageRecu((Message) packet.getData());
+            case ERROR          -> afficherAlerte((String) packet.getData());
+        }
     }
 
-    private void majListeMembres(List<String> membres) {
+    private void majListeMembres(List<User> membres) {
         listeMembres.getItems().clear();
-        for (String m : membres) {
-            if (!m.equals(currentUser)) {
-                listeMembres.getItems().add(m);
+        for (User u : membres) {
+            if (!u.getUserName().equals(currentUser.getUserName())) {
+                listeMembres.getItems().add(u.getUserName());
             }
         }
     }
@@ -87,34 +81,32 @@ public class ChatController {
         labelStatut.setText("● en ligne");
         zoneMessages.getChildren().clear();
 
-        Packet p = new Packet("GET_HISTORY");
-        p.setUsername(currentUser);
-        p.setReceiver(username);
-        ServerConnection.getInstance().send(p);
+        User receiver = new User(username, null, User.Role.MEMBRE);
+        Message msg = new Message(currentUser, receiver, "");
+        ServerConnection.getInstance().send(new Packet(Packet.Type.GET_HISTORY, msg));
     }
 
     @SuppressWarnings("unchecked")
-    private void chargerHistorique(Packet packet) {
-        // L'historique sera géré par le serveur
-        List<String[]> historique = (List<String[]>) packet.getData();
+    private void chargerHistorique(List<Message> historique) {
         zoneMessages.getChildren().clear();
         if (historique != null) {
-            for (String[] msg : historique) {
-                boolean estMoi = msg[0].equals(currentUser);
-                ajouterBulle(msg[0], msg[1], msg[2], estMoi);
+            for (Message msg : historique) {
+                boolean estMoi = msg.getSender().getUserName()
+                        .equals(currentUser.getUserName());
+                ajouterBulle(msg.getSender().getUserName(), msg.getMessage(),
+                        msg.getDateHeureEnvoi().toString(), estMoi);
             }
         }
         defilerVersLeBas();
     }
 
-    private void afficherMessageRecu(Packet packet) {
-        String expediteur = packet.getUsername();
+    private void afficherMessageRecu(Message message) {
+        String expediteur = message.getSender().getUserName();
         if (expediteur.equals(selectedMember)) {
-            ajouterBulle(expediteur, packet.getMessage(),
-                    java.time.LocalDateTime.now().toString(), false);
+            ajouterBulle(expediteur, message.getMessage(),
+                    message.getDateHeureEnvoi().toString(), false);
             defilerVersLeBas();
         } else {
-            // Notification
             listeMembres.getItems().replaceAll(u -> {
                 String clean = u.replace(" 🔴", "");
                 return clean.equals(expediteur) ? expediteur + " 🔴" : u;
@@ -122,18 +114,18 @@ public class ChatController {
         }
     }
 
-    // RG13 : Voir tous les membres
     @FXML
     public void voirTousMembres() {
-        ServerConnection.getInstance().send(new Packet("GET_ALL_MEMBERS"));
+        ServerConnection.getInstance().send(new Packet(Packet.Type.GET_ALL_MEMBERS, null));
     }
 
-    private void afficherTousMembres(List<String> membres) {
+    @SuppressWarnings("unchecked")
+    private void afficherTousMembres(List<User> membres) {
         Dialog<Void> dialog = new Dialog<>();
         dialog.setTitle("Liste complète des membres");
         dialog.setHeaderText("👥 Tous les membres inscrits (" + membres.size() + ")");
         ListView<String> liste = new ListView<>();
-        liste.getItems().addAll(membres);
+        for (User u : membres) liste.getItems().add(u.getUserName());
         liste.setPrefSize(420, 300);
         dialog.getDialogPane().setContent(liste);
         dialog.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
@@ -149,19 +141,18 @@ public class ChatController {
         String contenu = champMessage.getText().trim();
         if (contenu.isEmpty() || contenu.length() > 1000) return;
 
-        Packet p = new Packet("SEND_MSG");
-        p.setUsername(currentUser);
-        p.setReceiver(selectedMember);
-        p.setMessage(contenu);
-        ServerConnection.getInstance().send(p);
+        User receiver = new User(selectedMember, null, User.Role.MEMBRE);
+        Message message = new Message(currentUser, receiver, contenu);
+        ServerConnection.getInstance().send(new Packet(Packet.Type.MESSAGE, message));
 
-        ajouterBulle(currentUser, contenu,
+        ajouterBulle(currentUser.getUserName(), contenu,
                 java.time.LocalDateTime.now().toString(), true);
         champMessage.clear();
         defilerVersLeBas();
     }
 
-    private void ajouterBulle(String expediteur, String contenu, String heure, boolean estMoi) {
+    private void ajouterBulle(String expediteur, String contenu,
+                               String heure, boolean estMoi) {
         VBox bulle = new VBox(4);
         bulle.setMaxWidth(420);
         bulle.setPadding(new Insets(10, 14, 10, 14));
@@ -187,15 +178,13 @@ public class ChatController {
 
     @FXML
     public void seDeconnecter() {
-        Packet p = new Packet("LOGOUT");
-        p.setUsername(currentUser);
-        ServerConnection.getInstance().send(p);
+        ServerConnection.getInstance().send(new Packet(Packet.Type.LOGOUT, null));
         ServerConnection.getInstance().disconnect();
         allerLogin();
     }
 
     private void gererDeconnexion() {
-        afficherAlerte("❌ Connexion perdue avec le serveur. (RG10)");
+        afficherAlerte("❌ Connexion perdue avec le serveur.");
         allerLogin();
     }
 
