@@ -64,8 +64,9 @@ public class RegisterController {
             return;
         }
 
-        User user = new User(username, PasswordUtil.getHash(password.toCharArray()),
-                User.Role.valueOf(role));
+        // SHA-256 côté client — jamais le mot de passe en clair sur le réseau
+        String sha256 = PasswordUtil.getSHA256(password.toCharArray());
+        User user = new User(username, sha256, User.Role.valueOf(role));
         ServerConnection.getInstance().send(new Packet(Packet.Type.REGISTER, user));
     }
 

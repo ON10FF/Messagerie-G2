@@ -6,7 +6,6 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
-import org.example.client.PacketCallback;
 import org.example.client.ServerConnection;
 import org.example.model.User;
 import org.example.util.Packet;
@@ -48,7 +47,9 @@ public class LoginController {
             return;
         }
 
-        User user = new User(username, PasswordUtil.getHash(password.toCharArray()), User.Role.MEMBRE);
+        // SHA-256 côté client — jamais le mot de passe en clair sur le réseau
+        String sha256 = PasswordUtil.getSHA256(password.toCharArray());
+        User user = new User(username, sha256, User.Role.MEMBRE);
         ServerConnection.getInstance().send(new Packet(Packet.Type.LOGIN, user));
     }
 

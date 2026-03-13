@@ -50,7 +50,9 @@ public class ChatController {
         listeMembres.setOnMouseClicked(e -> {
             String selection = listeMembres.getSelectionModel().getSelectedItem();
             if (selection != null && !selection.equals(username)) {
-                selectionnerMembre(selection.replace(" 🔴", ""));
+                // Nettoie le 🔴 et le (non lu)
+                String clean = selection.replace(" 🔴", "").trim();
+                selectionnerMembre(clean);
             }
         });
 
@@ -60,9 +62,11 @@ public class ChatController {
     @SuppressWarnings("unchecked")
     private void traiterReponse(Packet packet) {
         switch (packet.getType()) {
-            case USER_LIST      -> majListeMembres((List<User>) packet.getData());
-            case MESSAGE        -> afficherMessageRecu((Message) packet.getData());
-            case ERROR          -> afficherAlerte((String) packet.getData());
+            case USER_LIST       -> majListeMembres((List<User>) packet.getData());
+            case MESSAGE         -> afficherMessageRecu((Message) packet.getData());
+            case HISTORY         -> chargerHistorique((List<Message>) packet.getData());
+            case GET_ALL_MEMBERS -> afficherTousMembres((List<User>) packet.getData());
+            case ERROR           -> afficherAlerte((String) packet.getData());
         }
     }
 
@@ -81,12 +85,17 @@ public class ChatController {
         labelStatut.setText("● en ligne");
         zoneMessages.getChildren().clear();
 
+        // Retire le 🔴 quand on ouvre la conversation
+        listeMembres.getItems().replaceAll(u -> {
+            String clean = u.replace(" 🔴", "").trim();
+            return clean.equals(username) ? clean : u;
+        });
+
         User receiver = new User(username, null, User.Role.MEMBRE);
         Message msg = new Message(currentUser, receiver, "");
         ServerConnection.getInstance().send(new Packet(Packet.Type.GET_HISTORY, msg));
     }
 
-    @SuppressWarnings("unchecked")
     private void chargerHistorique(List<Message> historique) {
         zoneMessages.getChildren().clear();
         if (historique != null) {
@@ -102,15 +111,26 @@ public class ChatController {
 
     private void afficherMessageRecu(Message message) {
         String expediteur = message.getSender().getUserName();
+
         if (expediteur.equals(selectedMember)) {
+            // ✅ La conversation est ouverte → affiche directement
             ajouterBulle(expediteur, message.getMessage(),
                     message.getDateHeureEnvoi().toString(), false);
             defilerVersLeBas();
         } else {
-            listeMembres.getItems().replaceAll(u -> {
-                String clean = u.replace(" 🔴", "");
-                return clean.equals(expediteur) ? expediteur + " 🔴" : u;
-            });
+            // ✅ Conversation pas ouverte → affiche 🔴 dans la liste
+            boolean dejaPresent = listeMembres.getItems().stream()
+                    .anyMatch(u -> u.replace(" 🔴", "").trim().equals(expediteur));
+
+            if (!dejaPresent) {
+                // Ajoute l'expéditeur s'il n'est pas encore dans la liste
+                listeMembres.getItems().add(expediteur + " 🔴");
+            } else {
+                listeMembres.getItems().replaceAll(u -> {
+                    String clean = u.replace(" 🔴", "").trim();
+                    return clean.equals(expediteur) ? expediteur + " 🔴" : u;
+                });
+            }
         }
     }
 
@@ -119,7 +139,6 @@ public class ChatController {
         ServerConnection.getInstance().send(new Packet(Packet.Type.GET_ALL_MEMBERS, null));
     }
 
-    @SuppressWarnings("unchecked")
     private void afficherTousMembres(List<User> membres) {
         Dialog<Void> dialog = new Dialog<>();
         dialog.setTitle("Liste complète des membres");
@@ -152,7 +171,7 @@ public class ChatController {
     }
 
     private void ajouterBulle(String expediteur, String contenu,
-                               String heure, boolean estMoi) {
+                              String heure, boolean estMoi) {
         VBox bulle = new VBox(4);
         bulle.setMaxWidth(420);
         bulle.setPadding(new Insets(10, 14, 10, 14));

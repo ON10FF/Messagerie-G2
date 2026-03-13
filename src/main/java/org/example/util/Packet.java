@@ -4,7 +4,11 @@ import java.io.Serializable;
 
 public class Packet implements Serializable {
 
-    public enum Type {LOGIN, REGISTER, MESSAGE, LOGOUT, GET_USERS, USER_LIST, ERROR, SUCCESS}
+    public enum Type {
+        LOGIN, REGISTER, MESSAGE, LOGOUT,
+        GET_USERS, GET_HISTORY, GET_ALL_MEMBERS, GET_ONLINE_USERS,
+        USER_LIST, HISTORY, ERROR, SUCCESS
+    }
 
     private static final long serialVersionUID = 1L;
 
@@ -17,7 +21,7 @@ public class Packet implements Serializable {
         this.data = data;
     }
 
-    public Type getType() {return type;}
+    public Type getType() { return type; }
 
-    public Object getData() {return data;}
+    public Object getData() { return data; }
 }
