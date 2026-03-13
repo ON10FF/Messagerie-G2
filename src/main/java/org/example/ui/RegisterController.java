@@ -7,7 +7,9 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
 import org.example.client.ServerConnection;
-import org.example.model.Packet;
+import org.example.model.User;
+import org.example.util.Packet;
+import org.example.util.PasswordUtil;
 
 public class RegisterController {
 
@@ -22,7 +24,6 @@ public class RegisterController {
         comboRole.getItems().addAll("MEMBRE", "BENEVOLE", "ORGANISATEUR");
         comboRole.setValue("MEMBRE");
 
-        // Afficher le champ code secret si ORGANISATEUR sélectionné
         comboRole.setOnAction(e -> {
             boolean estOrga = "ORGANISATEUR".equals(comboRole.getValue());
             champCodeSecret.setVisible(estOrga);
@@ -30,30 +31,25 @@ public class RegisterController {
             if (!estOrga) champCodeSecret.clear();
         });
 
-        ServerConnection.getInstance().setOnMessage(this::traiterReponse);
-    }
-
-    private void traiterReponse(Packet packet) {
-        Platform.runLater(() -> {
+        ServerConnection.getInstance().setOnMessage(packet -> Platform.runLater(() -> {
             switch (packet.getType()) {
-                case "REGISTER_OK" -> {
+                case SUCCESS -> {
                     labelErreur.setStyle("-fx-text-fill: #4caf50;");
-                    labelErreur.setText("✅ " + packet.getMessage());
+                    labelErreur.setText("✅ " + packet.getData());
                 }
-                case "REGISTER_FAIL" -> {
+                case ERROR -> {
                     labelErreur.setStyle("-fx-text-fill: #e94560;");
-                    labelErreur.setText("❌ " + packet.getMessage());
+                    labelErreur.setText("❌ " + packet.getData());
                 }
             }
-        });
+        }));
     }
 
     @FXML
     public void sInscrire() {
-        String username   = champUsername.getText().trim();
-        String password   = champPassword.getText();
-        String role       = comboRole.getValue();
-        String codeSecret = champCodeSecret.getText();
+        String username = champUsername.getText().trim();
+        String password = champPassword.getText();
+        String role     = comboRole.getValue();
         labelErreur.setText("");
 
         if (username.isEmpty() || password.isEmpty()) {
@@ -61,18 +57,16 @@ public class RegisterController {
             labelErreur.setText("Veuillez remplir tous les champs.");
             return;
         }
+
         if (password.length() < 4) {
             labelErreur.setStyle("-fx-text-fill: #e94560;");
             labelErreur.setText("Mot de passe trop court (minimum 4 caractères).");
             return;
         }
 
-        Packet packet = new Packet("REGISTER");
-        packet.setUsername(username);
-        packet.setMessage(password);
-        packet.setRole(role);
-        packet.setData(codeSecret);
-        ServerConnection.getInstance().send(packet);
+        User user = new User(username, PasswordUtil.getHash(password.toCharArray()),
+                User.Role.valueOf(role));
+        ServerConnection.getInstance().send(new Packet(Packet.Type.REGISTER, user));
     }
 
     @FXML
