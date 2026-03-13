@@ -4,8 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
          http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-
-  <groupId>com.association</groupId>
+  <groupId>org.example</groupId>
   <artifactId>messagerie-g2</artifactId>
   <version>1.0-SNAPSHOT</version>
   <packaging>jar</packaging>
@@ -18,7 +17,6 @@
   </properties>
 
   <dependencies>
-
     <!-- JavaFX -->
     <dependency>
       <groupId>org.openjfx</groupId>
@@ -38,28 +36,27 @@
       <version>6.4.4.Final</version>
     </dependency>
 
-    <!-- MySQL Driver -->
+    <!-- PostgreSQL Driver -->
     <dependency>
-      <groupId>com.mysql</groupId>
-      <artifactId>mysql-connector-j</artifactId>
-      <version>8.3.0</version>
+      <groupId>org.postgresql</groupId>
+      <artifactId>postgresql</artifactId>
+      <version>42.7.3</version>
     </dependency>
 
-    <!-- BCrypt pour hachage des mots de passe (RG9) -->
+    <!-- BCrypt -->
     <dependency>
       <groupId>org.mindrot</groupId>
       <artifactId>jbcrypt</artifactId>
       <version>0.4</version>
     </dependency>
 
-    <!-- Lombok (optionnel mais pratique) -->
+    <!-- Lombok -->
     <dependency>
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
       <version>1.18.32</version>
       <scope>provided</scope>
     </dependency>
-
   </dependencies>
 
   <build>
@@ -70,7 +67,7 @@
         <artifactId>javafx-maven-plugin</artifactId>
         <version>0.0.8</version>
         <configuration>
-          <mainClass>com.association.ui.MainApp</mainClass>
+          <mainClass>org.example.server.Main</mainClass>
         </configuration>
       </plugin>
     </plugins>
